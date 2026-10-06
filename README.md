@@ -28,4 +28,31 @@ rdp into windows and ssh into kali and then testing connectivity:
 
 <img width="1481" height="758" alt="image" src="https://github.com/user-attachments/assets/7df17d4d-0bba-4fe3-8d6a-47493bf0eb16" />
 
+phase 2 : Logging, Sysmon, and connecting to Sentinel
+
+then ran the audit policy commands
+
+
+windows security events configuration
+<img width="1915" height="932" alt="image" src="https://github.com/user-attachments/assets/406a07b3-b20b-41b8-b4a6-bc8c71075ef5" />
+
+
+creating data collection rule: 
+
+<img width="890" height="925" alt="image" src="https://github.com/user-attachments/assets/3853a506-56d3-4f5a-aaf6-d2661c081c02" />
+
+sysmon running verification:
+<img width="1517" height="802" alt="image" src="https://github.com/user-attachments/assets/1f029867-fdf0-4625-9abc-aa0fc4aefcfa" />
+
+sentinel collecting logs:
+
+<img width="1491" height="912" alt="image" src="https://github.com/user-attachments/assets/5963d94a-e698-4b9f-9f1b-2b5f9e79c6a4" />
+
+
+
+
+
+
+
+
 
