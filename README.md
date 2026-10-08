@@ -15,20 +15,20 @@ Most portfolio SOC labs stop at "I built a SIEM and wrote a detection rule." Thi
 ## Architecture
 
 ```
-┌─────────────────────┐          ┌─────────────────────┐
-│   Kali Linux VM      │          │   Windows 11 VM      │
-│   KALI-ATT-01         │  brute  │   WKS-FIN-01          │
-│   10.10.1.20           │ ─force─▶│   10.10.1.10           │
-│                         │  RDP   │   Sysmon                │
-│   Hydra, FreeRDP        │◀──C2───│   PowerShell logging     │
-│                         │        │   Windows auditing        │
-└─────────────────────┘          └───────────┬─────────────┘
-                                              │ telemetry (AMA)
-                                              ▼
+┌─────────────────────┐          ┌──────────────────────┐
+│   Kali Linux VM     │          │   Windows 11 VM      │
+│   KALI-ATT-01       │  brute   │   WKS-FIN-01         │
+│   10.10.1.20        │ ─force─> │   10.10.1.10         │
+│                     │  RDP     │   Sysmon             │
+│   Hydra, FreeRDP    │ <──C2─── │   PowerShell logging │
+│                     │          │   Windows auditing   │
+└─────────────────────┘          └───────────┬──────────┘
+                                             │ telemetry (AMA)
+                                             ▼
                                   ┌─────────────────────────┐
-                                  │   Microsoft Sentinel      │
-                                  │   KQL · Analytics Rules    │
-                                  │   Incidents · Hunting       │
+                                  │   Microsoft Sentinel    │
+                                  │   KQL · Analytics Rules │
+                                  │   Incidents · Hunting   │
                                   └─────────────────────────┘
 ```
 
