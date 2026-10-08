@@ -1,0 +1,52 @@
+<Sysmon schemaversion="4.90">
+  <!--
+    Windows Threat Hunting & Incident Response Lab
+    Target: WKS-FIN-01
+
+    This compact project configuration is designed to reproduce the
+    telemetry types documented in the project report.
+
+    It is not a verbatim copy of the SwiftOnSecurity community baseline.
+    The original lab used that baseline and extended it with a targeted
+    sensitive-file rule for C:\Temp\Finance\*.
+  -->
+
+  <HashAlgorithms>SHA256</HashAlgorithms>
+
+  <EventFiltering>
+
+    <!-- Process creation -->
+    <ProcessCreate onmatch="include">
+      <CommandLine condition="contains">-ExecutionPolicy Bypass</CommandLine>
+      <Image condition="end with">\powershell.exe</Image>
+      <Image condition="end with">\pwsh.exe</Image>
+      <Image condition="end with">\runas.exe</Image>
+      <Image condition="end with">\cmd.exe</Image>
+    </ProcessCreate>
+
+    <!-- Network connections -->
+    <NetworkConnect onmatch="include">
+      <DestinationPort condition="is">8080</DestinationPort>
+    </NetworkConnect>
+
+    <!-- CreateRemoteThread: retained for investigation / false-positive triage -->
+    <CreateRemoteThread onmatch="include">
+      <SourceImage condition="is">C:\Windows\System32\dwm.exe</SourceImage>
+      <TargetImage condition="is">C:\Windows\System32\csrss.exe</TargetImage>
+    </CreateRemoteThread>
+
+    <!--
+      Sensitive file activity identified during the investigation.
+      The original baseline did not provide visibility for generic writes
+      in this location, so a targeted rule was added.
+    -->
+    <FileCreate onmatch="include">
+      <TargetFilename condition="begin with">C:\Temp\Finance\</TargetFilename>
+    </FileCreate>
+
+    <FileDelete onmatch="include">
+      <TargetFilename condition="begin with">C:\Temp\Finance\</TargetFilename>
+    </FileDelete>
+
+  </EventFiltering>
+</Sysmon>
