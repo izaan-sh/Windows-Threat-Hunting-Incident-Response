@@ -97,6 +97,7 @@ SecurityEvent
 | project TimeGenerated = SuccessTime, TargetUserName, IpAddress, FailCount
 ```
 
+
 ### 2. PowerShell Script Block Logging XML Parsing (Event 4104)
 *Parses nested XML data to extract execution bypass arguments and malicious command lines.*
 
