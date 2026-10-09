@@ -64,6 +64,7 @@ Most portfolio labs stop once an alert fires. This lab focuses entirely on **wha
                       └─────────────────────────────────────────┘
 ```
 
+## Lab Specifications
 
 | Component | Detail |
 |---|---|
