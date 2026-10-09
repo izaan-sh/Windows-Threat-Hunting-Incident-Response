@@ -46,7 +46,6 @@ Most portfolio SOC labs stop at "I built a SIEM and wrote a detection rule." Thi
                       └─────────────────────────────────────────┘
 ```
 
-Full diagrams: [`architecture/architecture-diagram.png`](architecture/), [`architecture/lab-network.png`](architecture/)
 
 | Component | Detail |
 |---|---|
