@@ -67,8 +67,8 @@ Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data col
 | 2 | PowerShell-based reconnaissance | T1059.001 | [`attack-simulation/02-powershell/`](attack-simulation/02-powershell-reconnaissance/) |
 | 3 | Privilege escalation via credential reuse (`runas`) | T1078 / T1550 | [`attack-simulation/03-runas-pivot/`](attack-simulation/03-runas-pivot/) |
 | 4 | Backdoor local administrator account creation | T1136.001 | [`attack-simulation/04-account-creation/`](attack-simulation/04-account-creation/) |
-| 5 | Privilege escalation to Administrators | T1098 | [`attack-simulation/05-admin-privilege/`](attack-simulation/05-admin-privilege/) |
-| 6 | Persistence via a disguised scheduled task | T1053.005 | [`attack-simulation/06-scheduled-task/`](attack-simulation/06-scheduled-task/) |
+| 5 | Privilege escalation to Administrators | T1098 | [`attack-simulation/05-admin-privilege/`](attack-simulation/05-administrator-group-modification/) |
+| 6 | Persistence via a disguised scheduled task | T1053.005 | [`attack-simulation/06-scheduled-task/`](attack-simulation/06-scheduled-task-persistence/) |
 | 7 | Staging and deletion of a simulated sensitive file | T1074.001, T1070.004 | [`attack-simulation/07-file-staging/`](attack-simulation/07-file-staging/) |
 | 8 | Outbound connection consistent with command-and-control | T1071 / T1105 | [`attack-simulation/08-network-communication/`](attack-simulation/08-network-communication/) |
 
