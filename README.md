@@ -4,7 +4,7 @@
 
 This is the third project in a progression:
 
-1. [SOC Home Lab (Wazuh)](#) — telemetry collection and detection fundamentals
+1. [SOC Home Lab (Wazuh)](https://github.com/izaan-sh/Wazuh-Home-SOC-Lab) — telemetry collection and detection fundamentals
 2. [Cloud SOC Lab (Microsoft Sentinel)](https://github.com/izaan-sh/Cloud-SOC-Lab-Microsoft-Sentinel) — cloud SIEM, detection-to-automation pipeline with SOAR response
 3. **This project** — investigation and response, not just detection
 
