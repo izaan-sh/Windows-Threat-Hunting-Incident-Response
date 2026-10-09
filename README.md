@@ -78,7 +78,7 @@ Most portfolio labs stop once an alert fires. This lab focuses entirely on **wha
 
 Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data collection, Kali attacker configuration).
 
-## Attack chain simulated
+## ⚔️ Attack chain simulated
 
 | Stage | Action | MITRE technique | Details |
 |---|---|---|---|
@@ -91,7 +91,7 @@ Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data col
 | 7 | Staging and deletion of a simulated sensitive file | T1074.001, T1070.004 | [`attack-simulation/07-file-staging/`](attack-simulation/07-file-staging/) |
 | 8 | Outbound connection consistent with command-and-control | T1071 / T1105 | [`attack-simulation/08-network-communication/`](attack-simulation/08-network-communication/) |
 
-## What I built
+## 🛠 What I built
 
 - **One Microsoft Sentinel Analytics Rule** correlating failed-then-successful logons, High severity, full entity mapping, verified firing correctly against the attack data. See [`detections/sentinel-rules/`](detections/sentinel-rules/).
 - **Eight KQL threat-hunting queries**, each answering a specific investigative question, plus a master correlation query reconstructing the full chronological chain from multiple log sources. See [`threat-hunting/`](threat-hunting/).
@@ -99,7 +99,7 @@ Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data col
 - **A complete MITRE ATT&CK mapping**: 12 techniques, each tied to specific evidence and event IDs, plus one false-positive technique investigated and ruled out. See [`investigation/mitre-mapping.md`](investigation/mitre-mapping.md).
 - **Full containment and recovery**, with a before/after comparison against a pre-incident baseline, completed in under two minutes of response time. See [`incident-response/`](incident-response/).
 
-## Key findings
+## 🔬 Key findings
 
 The most interesting part of this project isn't the attack itself; it's what the investigation turned up. Full write-up: [`investigation/findings.md`](investigation/findings.md).
 
@@ -108,15 +108,13 @@ The most interesting part of this project isn't the attack itself; it's what the
 3. **A default Sysmon configuration had a real detection gap.** The SwiftOnSecurity baseline doesn't log generic file writes outside specific monitored paths. Caught during active verification, fixed with a targeted rule, and re-tested live mid-investigation.
 4. **A real alert fired during the quiet baseline period and turned out to be a false positive** — a process-injection pattern between two trusted Windows system processes, tied to normal RDP session startup. Investigated and correctly ruled benign.
 
-## Indicators of Compromise
+## 📄 Incident Report and Indicators of Compromise
 
 Full list, accounts, network, host artifacts, timing: [`investigation/iocs.md`](investigation/iocs.md).
 
-## Report
-
 The full written incident report, covering Executive Summary, Environment, Incident Overview, Attack Timeline, Detection, Investigation, MITRE ATT&CK Mapping, Indicators of Compromise, Containment, Recovery, Lessons Learned, and Detection Recommendations, is in [`report/Windows-Threat-Hunting-IR-Report.pdf`](report/).
 
-## Skills demonstrated
+## 🛠 Skills demonstrated
 
 Windows Event Log analysis, Sysmon deployment and tuning, PowerShell Script Block Logging, Microsoft Sentinel (KQL, Analytics Rules, Hunting, Incidents), threat hunting methodology, MITRE ATT&CK mapping, indicator of compromise identification, timeline reconstruction, cross-log correlation and attribution, incident containment and recovery, detection engineering, and technical report writing.
 
