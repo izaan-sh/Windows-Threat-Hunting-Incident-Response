@@ -63,15 +63,14 @@ Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data col
 
 | Stage | Action | MITRE technique | Details |
 |---|---|---|---|
-| 1 | Brute-force RDP against a standard user account | T1110 | [`attack-simulation/01-rdp-authentication/`](attack-simulation/01-rdp-authentication/) |
-| 2 | Interactive session compromise, displacing a legitimate admin session | T1078, T1021.001 | [`attack-simulation/01-rdp-authentication/`](attack-simulation/01-rdp-authentication/) |
-| 3 | PowerShell-based reconnaissance | T1059.001 | [`attack-simulation/02-powershell/`](attack-simulation/02-powershell/) |
-| 4 | Privilege escalation via credential reuse (`runas`) | T1078 / T1550 | [`attack-simulation/03-runas-pivot/`](attack-simulation/03-runas-pivot/) |
-| 5 | Backdoor local administrator account creation | T1136.001 | [`attack-simulation/04-account-creation/`](attack-simulation/04-account-creation/) |
-| 6 | Privilege escalation to Administrators | T1098 | [`attack-simulation/05-admin-privilege/`](attack-simulation/05-admin-privilege/) |
-| 7 | Persistence via a disguised scheduled task | T1053.005 | [`attack-simulation/06-scheduled-task/`](attack-simulation/06-scheduled-task/) |
-| 8 | Staging and deletion of a simulated sensitive file | T1074.001, T1070.004 | [`attack-simulation/07-file-staging/`](attack-simulation/07-file-staging/) |
-| 9 | Outbound connection consistent with command-and-control | T1071 / T1105 | [`attack-simulation/08-network-communication/`](attack-simulation/08-network-communication/) |
+| 1 | Brute-force RDP against a standard user account, then an interactive session compromise displacing a legitimate admin session | T1110, T1078, T1021.001 | [`attack-simulation/01-rdp-authentication/`](attack-simulation/01-rdp-authentication/) |
+| 2 | PowerShell-based reconnaissance | T1059.001 | [`attack-simulation/02-powershell/`](attack-simulation/02-powershell/) |
+| 3 | Privilege escalation via credential reuse (`runas`) | T1078 / T1550 | [`attack-simulation/03-runas-pivot/`](attack-simulation/03-runas-pivot/) |
+| 4 | Backdoor local administrator account creation | T1136.001 | [`attack-simulation/04-account-creation/`](attack-simulation/04-account-creation/) |
+| 5 | Privilege escalation to Administrators | T1098 | [`attack-simulation/05-admin-privilege/`](attack-simulation/05-admin-privilege/) |
+| 6 | Persistence via a disguised scheduled task | T1053.005 | [`attack-simulation/06-scheduled-task/`](attack-simulation/06-scheduled-task/) |
+| 7 | Staging and deletion of a simulated sensitive file | T1074.001, T1070.004 | [`attack-simulation/07-file-staging/`](attack-simulation/07-file-staging/) |
+| 8 | Outbound connection consistent with command-and-control | T1071 / T1105 | [`attack-simulation/08-network-communication/`](attack-simulation/08-network-communication/) |
 
 ## What I built
 
