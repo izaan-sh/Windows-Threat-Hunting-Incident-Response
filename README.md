@@ -1,12 +1,24 @@
-# Windows Threat Hunting & Incident Response: Simulated Endpoint Compromise
+# Windows Threat Hunting & Incident Response Lab
 
-An end-to-end Incident Response (IR) and Threat Hunting exercise simulating a multi-stage Windows endpoint compromise in an isolated Azure lab environment. 
+**A self-directed purple-team exercise.** I designed, built, and executed a full multi-stage simulated compromise against a Windows 11 workstation in an isolated Azure lab, then independently investigated it end to end as a SOC analyst would investigate a real incident: detection engineering, threat hunting, cross-log correlation, MITRE ATT&CK mapping, containment, and recovery, using Microsoft Sentinel, Sysmon, and native Windows auditing.
 
-This project focuses on the **SOC Analyst investigation workflow**: analyzing raw telemetry across Windows Security Auditing, Sysmon, and PowerShell Script Block Logging in **Microsoft Sentinel (KQL)** to reconstruct an attack timeline, build correlation detection rules, perform threat hunting, map behaviors to the **MITRE ATT&CK** framework, and document containment/recovery.
+This is the third project in a progression:
+
+1. [SOC Home Lab (Wazuh)](#) — telemetry collection and detection fundamentals
+2. [Cloud SOC Lab (Microsoft Sentinel)](#) — cloud SIEM, detection-to-automation pipeline with SOAR response
+3. **This project** — investigation and response, not just detection
+
+Where the first two projects focused on building the pipeline that generates an alert, this one focuses on what happens *after* the alert fires.
+
+> Every action described in this repo, both the attack and the investigation, was performed by me inside an isolated Azure lab network with no internet-facing exposure. No real systems, accounts, or data were involved at any point.
 
 ---
 
-## 🛠️ Environment & Architecture
+## Why this project
+
+Most portfolio SOC labs stop at "I built a SIEM and wrote a detection rule." This one goes further: a full intrusion simulated end to end, then investigated the way a Tier 1/2 SOC analyst actually works, starting from an alert, pivoting across multiple log sources, correlating process ancestry to uncover a privilege-escalation technique the Security log alone didn't reveal, catching a false positive instead of either ignoring or over-reacting to it, discovering a real telemetry gap mid-investigation and fixing it live, and closing out with containment that was independently verified against a pre-incident baseline rather than just claimed.
+
+## Architecture
 
 ```
                       ┌─────────────────────────────────────────┐
@@ -34,168 +46,130 @@ This project focuses on the **SOC Analyst investigation workflow**: analyzing ra
                       └─────────────────────────────────────────┘
 ```
 
+Full diagrams: [`architecture/architecture-diagram.png`](architecture/), [`architecture/lab-network.png`](architecture/)
+
 | Component | Detail |
-| :--- | :--- |
-| **Target Workstation** | Windows 11 Pro (`WKS-FIN-01` / `10.10.1.10`) |
-| **Attacker Workstation** | Kali Linux (`KALI-ATT-01` / `10.10.1.20`) |
-| **SIEM & Analytics** | Microsoft Sentinel (`LAW-ir-lab`) |
-| **Telemetry Agents** | Azure Monitor Agent (AMA), Sysmon v15.22 (SwiftOnSecurity baseline + custom path rule), PowerShell Script Block Logging (4103/4104) |
-| **Network Security** | Azure Network Security Group (NSG) restricting internet access to analyst IP |
+|---|---|
+| Resource group | `RG-IR-Lab` (Azure) |
+| Virtual network | `VNet-IR-Lab`, subnet `10.10.1.0/24`, fully isolated, inbound internet access restricted to the analyst's own IP via NSG |
+| Target host | `WKS-FIN-01`, Windows 11 Pro 25H2, static IP `10.10.1.10` |
+| Attacker host | `KALI-ATT-01`, Kali Linux, static IP `10.10.1.20` |
+| SIEM | Microsoft Sentinel, workspace `LAW-ir-lab` |
+| Telemetry | Windows Security auditing, PowerShell Script Block Logging (4103/4104), Sysmon v15.22 (SwiftOnSecurity baseline + a custom rule added mid-investigation, see [Key findings](#key-findings)) |
+| Time standard | Every system and every timestamp in this project is UTC |
 
----
+Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data collection, Kali attacker configuration).
 
-## 🎯 Simulated Attack Chain Summary
+## Attack chain simulated
 
-The attack chain models a realistic "Living-off-the-Land" (LotL) compromise without custom malware:
+| Stage | Action | MITRE technique | Details |
+|---|---|---|---|
+| 1 | Brute-force RDP against a standard user account | T1110 | [`attack-simulation/01-rdp-authentication/`](attack-simulation/01-rdp-authentication/) |
+| 2 | Interactive session compromise, displacing a legitimate admin session | T1078, T1021.001 | [`attack-simulation/01-rdp-authentication/`](attack-simulation/01-rdp-authentication/) |
+| 3 | PowerShell-based reconnaissance | T1059.001 | [`attack-simulation/02-powershell/`](attack-simulation/02-powershell/) |
+| 4 | Privilege escalation via credential reuse (`runas`) | T1078 / T1550 | [`attack-simulation/03-runas-pivot/`](attack-simulation/03-runas-pivot/) |
+| 5 | Backdoor local administrator account creation | T1136.001 | [`attack-simulation/04-account-creation/`](attack-simulation/04-account-creation/) |
+| 6 | Privilege escalation to Administrators | T1098 | [`attack-simulation/05-admin-privilege/`](attack-simulation/05-admin-privilege/) |
+| 7 | Persistence via a disguised scheduled task | T1053.005 | [`attack-simulation/06-scheduled-task/`](attack-simulation/06-scheduled-task/) |
+| 8 | Staging and deletion of a simulated sensitive file | T1074.001, T1070.004 | [`attack-simulation/07-file-staging/`](attack-simulation/07-file-staging/) |
+| 9 | Outbound connection consistent with command-and-control | T1071 / T1105 | [`attack-simulation/08-network-communication/`](attack-simulation/08-network-communication/) |
+
+## What I built
+
+- **One Microsoft Sentinel Analytics Rule** correlating failed-then-successful logons, High severity, full entity mapping, verified firing correctly against the attack data. See [`detections/sentinel-rules/`](detections/sentinel-rules/).
+- **Eight KQL threat-hunting queries**, each answering a specific investigative question, plus a master correlation query reconstructing the full chronological chain from multiple log sources. See [`threat-hunting/`](threat-hunting/).
+- **A fully verified incident timeline**, cross-checked stage by stage against raw Sentinel data as it was generated. See [`investigation/timeline.md`](investigation/timeline.md).
+- **A complete MITRE ATT&CK mapping**: 12 techniques, each tied to specific evidence and event IDs, plus one false-positive technique investigated and ruled out. See [`investigation/mitre-mapping.md`](investigation/mitre-mapping.md).
+- **Full containment and recovery**, with a before/after comparison against a pre-incident baseline, completed in under two minutes of response time. See [`incident-response/`](incident-response/).
+
+## Key findings
+
+The most interesting part of this project isn't the attack itself; it's what the investigation turned up. Full write-up: [`investigation/findings.md`](investigation/findings.md).
+
+1. **Attribution requires process-ancestry correlation, not just the Security log.** Account-creation and privilege-escalation events were logged under one administrator's name; tracing Sysmon's process tree revealed they actually originated from the already-compromised standard-user session, pivoted through `runas`.
+2. **Two logs disagreed on who created the persistence task** — the Security log and the Task Scheduler Operational log attributed it to different identities. Cross-referencing both was necessary to attribute it correctly.
+3. **A default Sysmon configuration had a real detection gap.** The SwiftOnSecurity baseline doesn't log generic file writes outside specific monitored paths. Caught during active verification, fixed with a targeted rule, and re-tested live mid-investigation.
+4. **A real alert fired during the quiet baseline period and turned out to be a false positive** — a process-injection pattern between two trusted Windows system processes, tied to normal RDP session startup. Investigated and correctly ruled benign.
+
+## Indicators of Compromise
+
+Full list, accounts, network, host artifacts, timing: [`investigation/iocs.md`](investigation/iocs.md).
+
+## Repository structure
 
 ```
-   [1. Initial Access]          [2. Execution]            [3. Escalation]
-   RDP Brute-Force (Hydra)   ►  PowerShell Recon    ►     Credential Reuse (runas)
-   8 Failures ➔ 1 Success       -ExecutionPolicy Bypass   `j.carter` ➔ `labadmin`
-             │
-             ▼
-   [4. Persistence]             [5. Data Staging]         [6. Command & Control]
-   Backdoor `lab_attacker`   ►  Created & deleted    ►    Outbound connection
-   & Task `SystemHealthCheck`   `financial_report.txt`    `powershell.exe` ➔ 10.10.1.20:8080
+windows-threat-hunting-ir/
+├── README.md
+├── report/
+│   └── Windows-Threat-Hunting-IR-Report.pdf
+├── architecture/
+│   ├── architecture-diagram.png
+│   └── lab-network.png
+├── setup/
+│   ├── windows/
+│   │   ├── sysmon-config.xml
+│   │   ├── powershell-logging.md
+│   │   └── telemetry-setup.md
+│   ├── sentinel/
+│   │   ├── data-collection.md
+│   │   ├── dcr-configuration.md
+│   │   └── workspace-setup.md
+│   └── kali/
+│       └── attacker-setup.md
+├── attack-simulation/
+│   ├── 01-rdp-authentication/
+│   ├── 02-powershell/
+│   ├── 03-runas-pivot/
+│   ├── 04-account-creation/
+│   ├── 05-admin-privilege/
+│   ├── 06-scheduled-task/
+│   ├── 07-file-staging/
+│   └── 08-network-communication/
+├── detections/
+│   ├── sentinel-rules/
+│   │   ├── failed-logons.md
+│   │   ├── account-creation.md
+│   │   ├── privilege-escalation.md
+│   │   └── ...
+│   └── sysmon/
+│       └── README.md              # points back to setup/windows/sysmon-config.xml
+├── threat-hunting/
+│   ├── failed-logons.kql
+│   ├── successful-logons.kql
+│   ├── powershell.kql
+│   ├── account-creation.kql
+│   ├── admin-group-changes.kql
+│   ├── scheduled-tasks.kql
+│   ├── network-connections.kql
+│   └── master-correlation.kql
+├── investigation/
+│   ├── timeline.md
+│   ├── findings.md
+│   ├── iocs.md
+│   └── mitre-mapping.md
+├── incident-response/
+│   ├── containment.md
+│   └── recovery.md
+└── screenshots/
+    ├── 01-environment/
+    ├── 02-attack/
+    ├── 03-detection/
+    ├── 04-hunting/
+    ├── 05-investigation/
+    └── 06-containment-recovery/
 ```
 
----
+Each `attack-simulation/NN-*/` folder holds a `commands.md` (what was run) and the supporting evidence for that stage. `detections/sysmon/` intentionally does not duplicate the Sysmon config file; it links back to the single canonical copy in `setup/windows/`.
 
-## 📊 Correlated Attack Timeline
+## Report
 
-| Time (UTC) | Event | Event / Artifact | SOC Interpretation |
-| :--- | :--- | :--- | :--- |
-| **09:18:49 – 09:19:17** | 8 Failed RDP Logons | Security `4625` (LogonType 3) | Automated credential brute-force attack |
-| **09:19:21** | Successful RDP Authentication | Security `4624` (LogonType 3) | Brute force succeeded; valid password identified |
-| **10:07:34** | Interactive Session Established | Security `4624` (LogonType 10) | Attacker gains full interactive graphical desktop access |
-| **10:07:59** | Admin Session Terminated | Security `4634` (`labadmin`) | Single-session limit displaced legitimate user session |
-| **10:10 – 10:17** | PowerShell Reconnaissance | Sysmon `1` / PowerShell `4104` | Enumeration via `whoami`, `hostname`, `ipconfig`, `Get-Process` |
-| **10:20:13** | Privilege Escalation Pivot | Sysmon `1` (`runas.exe`) | Attacker pivots from `j.carter` to `labadmin` credentials |
-| **10:21:52** | Backdoor Account Created | Security `4720` (`lab_attacker`) | Persistence backdoor account established |
-| **10:22:14** | Group Membership Escalation | Security `4732` (Administrators) | Backdoor account granted Local Administrator rights |
-| **10:34:19** | Scheduled Task Created | Security `4698` / TaskScheduler `106` | Task `SystemHealthCheck` created to run as `SYSTEM` on logon |
-| **10:50:46** | Outbound C2 Connection | Sysmon `3` (Port 8080) | `powershell.exe` establishes outbound socket to `10.10.1.20:8080` |
-| **12:05:38** | File Staging & Deletion | Sysmon `11` & `23` | File `C:\Temp\Finance\financial_report.txt` created/deleted |
+The full written incident report, covering Executive Summary, Environment, Incident Overview, Attack Timeline, Detection, Investigation, MITRE ATT&CK Mapping, Indicators of Compromise, Containment, Recovery, Lessons Learned, and Detection Recommendations, is in [`report/Windows-Threat-Hunting-IR-Report.pdf`](report/).
 
----
+## Skills demonstrated
 
-## 🔎 Threat Hunting & KQL Detection Rules
+Windows Event Log analysis, Sysmon deployment and tuning, PowerShell Script Block Logging, Microsoft Sentinel (KQL, Analytics Rules, Hunting, Incidents), threat hunting methodology, MITRE ATT&CK mapping, indicator of compromise identification, timeline reconstruction, cross-log correlation and attribution, incident containment and recovery, detection engineering, and technical report writing.
 
-### 1. Brute-Force Correlation Detection Rule
-*Fires a High-Severity incident in Sentinel when $\ge 5$ failed logons occur followed by a successful logon from the same IP within 5 minutes.*
+## Related projects
 
-```kql
-let failedThreshold = 5;
-let timeWindow = 5m;
-SecurityEvent
-| where EventID in (4624, 4625)
-| summarize
-    FailCount = countif(EventID == 4625),
-    SuccessTime = minif(TimeGenerated, EventID == 4624)
-  by TargetUserName, IpAddress, bin(TimeGenerated, timeWindow)
-| where FailCount >= failedThreshold and isnotempty(SuccessTime)
-| project TimeGenerated = SuccessTime, TargetUserName, IpAddress, FailCount
-```
-
-
-### 2. PowerShell Script Block Logging XML Parsing (Event 4104)
-*Parses nested XML data to extract execution bypass arguments and malicious command lines.*
-
-```kql
-Event
-| where TimeGenerated between (datetime(2026-10-07T10:07:00Z) .. datetime(2026-10-07T10:52:00Z))
-| where Source == "Microsoft-Windows-PowerShell" and EventID == 4104
-| extend x = parse_xml(EventData).DataItem.EventData.Data
-| mv-apply d = x on (summarize kv = make_bag(pack(tostring(d["@Name"]), tostring(d["#Text"]))))
-| project TimeGenerated, ScriptBlockText = tostring(kv.ScriptBlockText)
-| where ScriptBlockText !in ("prompt", "$global:?") and ScriptBlockText !startswith "{"
-| order by TimeGenerated asc
-```
-
-### 3. Sysmon Outbound C2 Connection Extraction (Event 3)
-*Extracts process binary paths, destination IP, and port for network connections.*
-
-```kql
-Event
-| where TimeGenerated between (datetime(2026-10-07T10:49:00Z) .. datetime(2026-10-07T10:52:00Z))
-| where Source == "Microsoft-Windows-Sysmon" and EventID == 3
-| extend x = parse_xml(EventData).DataItem.EventData.Data
-| mv-apply d = x on (summarize kv = make_bag(pack(tostring(d["@Name"]), tostring(d["#Text"]))))
-| project TimeGenerated, User = tostring(kv.User), Image = tostring(kv.Image), DestinationIp = tostring(kv.DestinationIp), DestinationPort = tostring(kv.DestinationPort)
-| order by TimeGenerated asc
-```
-
-### 4. Scheduled Task & Audit Log Union Query
-*Correlates Windows Security Task Creation (4698) with Task Scheduler Operational events (106/140/200/201).*
-
-```kql
-union SecurityEvent, Event
-| where TimeGenerated between (datetime(2026-10-07T10:00:00Z) .. datetime(2026-10-07T11:00:00Z))
-| where EventID == 4698 or (Source == "Microsoft-Windows-TaskScheduler" and EventID in (106, 140, 200, 201))
-| project TimeGenerated, EventID, Source, Activity, RenderedDescription
-| order by TimeGenerated asc
-```
-
----
-
-## 🔍 Key Analyst Investigative Findings
-
-1. **Process Ancestry vs. Security Log Subject Field**:
-   * Security Event `4720` (Account Creation) attributed `labadmin` as the `SubjectUserName`.
-   * Tracing Sysmon Event `1` process ancestry revealed the true origin: a `runas.exe` process with `ParentUser: j.carter` and `ParentImage: powershell.exe` spawned the elevated `cmd.exe`. The attacker reused `labadmin` credentials inside the already-compromised `j.carter` RDP session.
-2. **Log Source Disagreement on Attribution**:
-   * Task Scheduler Operational logs attributed task registration to SID `S-1-5-18` (`NT AUTHORITY\SYSTEM`) due to the task's `/ru SYSTEM` runtime context.
-   * Security Event `4698` and Sysmon process lineage correctly attributed creation to the user session (`labadmin`).
-3. **Telemetry & Visibility Gap Resolution**:
-   * Standard SwiftOnSecurity Sysmon configuration omitted generic file writes outside monitored system paths.
-   * The gap was identified mid-investigation when `financial_report.txt` creation went unlogged. Sysmon configuration was tuned with a targeted rule for `C:\Temp\Finance\*`, and telemetry was re-captured successfully.
-
----
-
-## 🛡️ Containment & Recovery
-
-Containment was executed within 90 seconds from an elevated administrative session and verified against Windows Security events and PowerShell baseline checks:
-
-```powershell
-# 1. Disable Backdoor Account
-net user lab_attacker /active:no               # Verified via Security Event 4725
-
-# 2. Remove Privileges
-net localgroup administrators lab_attacker /delete  # Verified via Security Event 4733
-
-# 3. Remove Persistence Mechanism
-schtasks /delete /tn "SystemHealthCheck" /f     # Verified via Security Event 4699
-
-# 4. Purge Account
-net user lab_attacker /delete                  # Verified via Security Event 4726
-```
-
-**Recovery Verification**:
-Executed `Compare-Object` between post-containment system state and pre-incident baselines for Local Users, Administrators Group Members, and Active Scheduled Tasks. Zero residual artifacts or persistence mechanisms remained.
-
----
-
-## 🗺️ MITRE ATT&CK Mapping
-
-| Tactic | Technique ID | Technique Name | Evidence / Artifact |
-| :--- | :--- | :--- | :--- |
-| **Initial Access** | `T1110.001` | Password Guessing | 8 consecutive 4625 events (~4s apart) |
-| **Initial Access** | `T1078` | Valid Accounts | Security 4624 (LogonType 3 & 10) |
-| **Initial Access** | `T1021.001` | Remote Desktop Protocol | Interactive session from 10.10.1.20 |
-| **Execution** | `T1059.001` | PowerShell | `-ExecutionPolicy Bypass` commands |
-| **Discovery** | `T1057` / `T1082` | Process & System Discovery | Executed `whoami`, `hostname`, `ipconfig` |
-| **Privilege Escalation** | `T1550` | Credential Reuse / Runas | `powershell.exe` ➔ `runas.exe` ➔ `labadmin` |
-| **Persistence** | `T1136.001` | Local Account Creation | Security Event 4720 (`lab_attacker`) |
-| **Persistence** | `T1053.005` | Scheduled Task | Created `SystemHealthCheck` running as SYSTEM |
-| **Collection** | `T1074.001` | Data Staged | File creation in `C:\Temp\Finance\` |
-| **Defense Evasion** | `T1070.004` | File Deletion | Staged file deleted after creation |
-| **Command & Control** | `T1071.001` | Application Layer Protocol | Outbound HTTP socket to 10.10.1.20:8080 |
-
----
-
-## 💡 Production SOC Recommendations
-
-1. **Correlate Credential-Switching**: Deploy analytics rules flagging `runas.exe` or token elevation where parent session user differs from child process context.
-2. **Composite Account Escalation Rules**: Correlate account creation (`4720`) immediately followed by group modification (`4732`) within 5 minutes as a High-severity alert.
-3. **Audit SYSTEM Scheduled Tasks**: Monitor for non-system processes creating scheduled tasks set to run as `SYSTEM` with `onlogon` triggers.
-4. **Custom Sysmon Path Rules**: Extend community baseline configurations to monitor sensitive directories (`Finance`, `HR`, `Executive` folders) for file creation/deletion.
+- [SOC Home Lab (Wazuh)](#)
+- [Cloud SOC Lab (Microsoft Sentinel)](#)
