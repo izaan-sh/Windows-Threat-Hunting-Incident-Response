@@ -1,26 +1,44 @@
 # Windows Threat Hunting & Incident Response Lab
 
-**A self-directed purple-team exercise.** I designed, built, and executed a full multi-stage simulated compromise against a Windows 11 workstation in an isolated Azure lab, then independently investigated it end to end as a SOC analyst would investigate a real incident: detection engineering, threat hunting, cross-log correlation, MITRE ATT&CK mapping, containment, and recovery, using Microsoft Sentinel, Sysmon, and native Windows auditing.
+![Sentinel](https://img.shields.io/badge/Microsoft_Sentinel-0078D4?style=for-the-badge&logo=microsoft&logoColor=white)
+![Azure](https://img.shields.io/badge/Azure-0089D6?style=for-the-badge&logo=microsoftazure&logoColor=white)
+![Windows 11](https://img.shields.io/badge/Windows_11-0078D4?style=for-the-badge&logo=windows11&logoColor=white)
+![Sysmon](https://img.shields.io/badge/Sysmon-v15.22-000000?style=for-the-badge&logo=shield&logoColor=white)
+![KQL](https://img.shields.io/badge/Query-KQL-5C2D91?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Completed-brightgreen?style=for-the-badge)
 
-This is the third project in a progression:
-
-1. [SOC Home Lab (Wazuh)](https://github.com/izaan-sh/Wazuh-Home-SOC-Lab) — telemetry collection and detection fundamentals
-2. [Cloud SOC Lab (Microsoft Sentinel)](https://github.com/izaan-sh/Cloud-SOC-Lab-Microsoft-Sentinel) — cloud SIEM, detection-to-automation pipeline with SOAR response
-3. **This project** — investigation and response, not just detection
-
-Where the first two projects focused on building the pipeline that generates an alert, this one focuses on what happens *after* the alert fires.
-
-> Every action described in this repo, both the attack and the investigation, was performed by me inside an isolated Azure lab network with no internet-facing exposure. No real systems, accounts, or data were involved at any point.
+> **A Self-Directed Purple-Team Exercise:** Engineered, executed, and investigated a multi-stage simulated compromise against an isolated Windows 11 workstation in Azure. Demonstrated end-to-end SOC Tier 1/2 workflow: detection engineering, threat hunting, cross-log correlation, MITRE ATT&CK mapping, telemetry gap remediation, and containment.
 
 ---
 
-## Why this project
+## 🎯 Scope & Progression
 
-Most portfolio SOC labs stop at "I built a SIEM and wrote a detection rule." This one goes further: a full intrusion simulated end to end, then investigated the way a Tier 1/2 SOC analyst actually works, starting from an alert, pivoting across multiple log sources, correlating process ancestry to uncover a privilege-escalation technique the Security log alone didn't reveal, catching a false positive instead of either ignoring or over-reacting to it, discovering a real telemetry gap mid-investigation and fixing it live, and closing out with containment that was independently verified against a pre-incident baseline rather than just claimed.
+This project represents the third stage in my practical defensive security path:
 
-## Architecture
+1. **[SOC Home Lab (Wazuh)](https://github.com/izaan-sh/Wazuh-Home-SOC-Lab)** — Telemetry collection, endpoint monitoring, and detection fundamentals.
+2. **[Cloud SOC Lab (Microsoft Sentinel)](https://github.com/izaan-sh/Cloud-SOC-Lab-Microsoft-Sentinel)** — Cloud SIEM, KQL detection rules, and SOAR response pipelines.
+3. **Windows Threat Hunting & Incident Response Lab (This Repo)** — Deep-dive investigation, cross-log attribution, threat hunting, and containment post-alert.
 
-```
+> **Lab Safety Notice:** All attack simulations, investigations, and containment actions were executed inside an isolated Azure virtual network (`VNet-IR-Lab`) with zero external internet access. No live production environments or real credentials were involved.
+
+---
+
+## 💡 Why This Project?
+
+Most portfolio labs stop once an alert fires. This lab focuses entirely on **what happens after the alert**:
+
+- **Real Investigation Workflows:** Pivoted across disparate log sources (Security Events, PowerShell, Sysmon, TaskScheduler) to uncover hidden attack context.
+- **Process Ancestry Attribution:** Traced `runas` privilege escalation that standard Security event logs misattributed.
+- **Live Telemetry Remediation:** Discovered a default Sysmon coverage gap mid-investigation, authored a custom rule, and re-tested live.
+- **False-Positive Analysis:** Investigated and ruled out benign Windows RDP process injection patterns during baseline validation.
+- **Verified Containment:** Performed host containment and verified recovery against a cryptographic pre-incident baseline in under **2 minutes**.
+
+---
+
+## 🏗 System Architecture
+
+```text
+
                       ┌─────────────────────────────────────────┐
                       │              Kali Linux VM              │
                       │               KALI-ATT-01               │
