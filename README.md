@@ -169,5 +169,5 @@ Windows Event Log analysis, Sysmon deployment and tuning, PowerShell Script Bloc
 
 ## Related projects
 
-- [SOC Home Lab (Wazuh)](#)
-- [Cloud SOC Lab (Microsoft Sentinel)](#)
+- [SOC Home Lab (Wazuh)](https://github.com/izaan-sh/Wazuh-Home-SOC-Lab)
+- [Cloud SOC Lab (Microsoft Sentinel)](https://github.com/izaan-sh/Cloud-SOC-Lab-Microsoft-Sentinel)
