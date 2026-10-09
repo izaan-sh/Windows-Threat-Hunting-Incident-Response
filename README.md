@@ -64,7 +64,7 @@ Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data col
 | Stage | Action | MITRE technique | Details |
 |---|---|---|---|
 | 1 | Brute-force RDP against a standard user account, then an interactive session compromise displacing a legitimate admin session | T1110, T1078, T1021.001 | [`attack-simulation/01-rdp-authentication/`](attack-simulation/01-rdp-authentication/) |
-| 2 | PowerShell-based reconnaissance | T1059.001 | [`attack-simulation/02-powershell/`](attack-simulation/02-powershell/) |
+| 2 | PowerShell-based reconnaissance | T1059.001 | [`attack-simulation/02-powershell/`](attack-simulation/02-powershell-reconnaissance/) |
 | 3 | Privilege escalation via credential reuse (`runas`) | T1078 / T1550 | [`attack-simulation/03-runas-pivot/`](attack-simulation/03-runas-pivot/) |
 | 4 | Backdoor local administrator account creation | T1136.001 | [`attack-simulation/04-account-creation/`](attack-simulation/04-account-creation/) |
 | 5 | Privilege escalation to Administrators | T1098 | [`attack-simulation/05-admin-privilege/`](attack-simulation/05-admin-privilege/) |
