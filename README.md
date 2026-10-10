@@ -112,7 +112,7 @@ The most interesting part of this project isn't the attack itself; it's what the
 
 Full list, accounts, network, host artifacts, timing: [`investigation/iocs.md`](investigation/findings/iocs.md).
 
-The full written incident report, covering Executive Summary, Environment, Incident Overview, Attack Timeline, Detection, Investigation, MITRE ATT&CK Mapping, Indicators of Compromise, Containment, Recovery, Lessons Learned, and Detection Recommendations, is in [`report/Windows-Threat-Hunting-IR-Report.pdf`](report/).
+The full written incident report, covering Executive Summary, Environment, Incident Overview, Attack Timeline, Detection, Investigation, MITRE ATT&CK Mapping, Indicators of Compromise, Containment, Recovery, Lessons Learned, and Detection Recommendations, is in [`report/Windows-Threat-Hunting-IR-Report.pdf`](report/Windows-Threat-Hunting-IR-Report.pdf).
 
 ## 🛠 Skills demonstrated
 
