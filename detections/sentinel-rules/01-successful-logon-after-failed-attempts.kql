@@ -1,0 +1,24 @@
+// Successful Logon Following Multiple Failed Attempts
+// Five-minute correlation bucket; not strict event sequencing.
+
+let failedThreshold = 5;
+let timeWindow = 5m;
+
+SecurityEvent
+| where EventID in (4624, 4625)
+| summarize
+    FailCount = countif(EventID == 4625),
+    SuccessCount = countif(EventID == 4624),
+    SuccessTime = minif(TimeGenerated, EventID == 4624)
+    by TargetUserName,
+       IpAddress,
+       TimeBucket = bin(TimeGenerated, timeWindow)
+| where FailCount >= failedThreshold
+    and SuccessCount > 0
+| project
+    TimeGenerated = SuccessTime,
+    TargetUserName,
+    IpAddress,
+    FailCount,
+    TimeBucket
+| order by TimeGenerated asc

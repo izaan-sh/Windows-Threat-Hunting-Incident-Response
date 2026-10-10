@@ -1,0 +1,94 @@
+// Supporting threat-hunting queries from the lab investigation.
+// The time ranges below follow the recorded activity on 2026-10-07.
+// Run each query separately in Sentinel Logs.
+
+// Hunt 1 — Authentication activity
+SecurityEvent
+| where TimeGenerated between
+    (datetime(2026-10-07T09:18:00Z) .. datetime(2026-10-07T10:08:00Z))
+| where EventID in (4624, 4625, 4634)
+| project TimeGenerated, EventID, LogonType,
+          TargetUserName, IpAddress, Activity
+| order by TimeGenerated asc
+
+// Hunt 2 — Sysmon process creation
+Event
+| where TimeGenerated between
+    (datetime(2026-10-07T10:07:00Z) .. datetime(2026-10-07T10:30:00Z))
+| where Source == "Microsoft-Windows-Sysmon" and EventID == 1
+| project TimeGenerated, EventID, Activity, RenderedDescription, EventData
+| order by TimeGenerated asc
+
+// Hunt 3 — PowerShell script-block activity (Event 4104)
+Event
+| where TimeGenerated between
+    (datetime(2026-10-07T10:07:00Z) .. datetime(2026-10-07T10:52:00Z))
+| where Source == "Microsoft-Windows-PowerShell" and EventID == 4104
+| extend x = parse_xml(EventData).DataItem.EventData.Data
+| mv-apply d = x on (
+    summarize kv = make_bag(pack(tostring(d["@Name"]), tostring(d["#text"])))
+)
+| project TimeGenerated, ScriptBlockText = tostring(kv.ScriptBlockText)
+| where ScriptBlockText !in ("prompt", "$global:?")
+| where ScriptBlockText !startswith "{ Set-StrictMode"
+| order by TimeGenerated asc
+
+// Hunt 4 — Newly created accounts
+SecurityEvent
+| where EventID == 4720
+| where TimeGenerated between
+    (datetime(2026-10-07T00:00:00Z) .. datetime(2026-10-07T23:59:00Z))
+| project TimeGenerated, TargetUserName, SubjectUserName, SubjectDomainName
+| order by TimeGenerated asc
+
+// Hunt 5 — Local group membership changes
+SecurityEvent
+| where EventID == 4732
+| where TimeGenerated between
+    (datetime(2026-10-07T00:00:00Z) .. datetime(2026-10-07T23:59:00Z))
+| project TimeGenerated, Activity, SubjectUserName, MemberName
+| order by TimeGenerated asc
+
+// Hunt 6 — Scheduled task activity
+union SecurityEvent, Event
+| where TimeGenerated between
+    (datetime(2026-10-07T10:00:00Z) .. datetime(2026-10-07T11:00:00Z))
+| where EventID == 4698
+    or (Source == "Microsoft-Windows-TaskScheduler" and EventID in (106, 140, 200, 201))
+| project TimeGenerated, EventID, Source, Activity, RenderedDescription
+| order by TimeGenerated asc
+
+// Hunt 7 — Sysmon network connections
+Event
+| where TimeGenerated between
+    (datetime(2026-10-07T10:00:00Z) .. datetime(2026-10-07T11:00:00Z))
+| where Source == "Microsoft-Windows-Sysmon" and EventID == 3
+| extend x = parse_xml(EventData).DataItem.EventData.Data
+| mv-apply d = x on (
+    summarize kv = make_bag(pack(tostring(d["@Name"]), tostring(d["#text"])))
+)
+| project
+    TimeGenerated,
+    User = tostring(kv.User),
+    Image = tostring(kv.Image),
+    DestinationIp = tostring(kv.DestinationIp),
+    DestinationPort = tostring(kv.DestinationPort)
+| where DestinationIp !in ("", "-")
+| order by TimeGenerated asc
+
+// Hunt 8 — Master incident correlation timeline
+union SecurityEvent, Event
+| where TimeGenerated between
+    (datetime(2026-10-07T09:18:00Z) .. datetime(2026-10-07T10:52:00Z))
+| where EventID in (4624, 4625, 4634, 4720, 4732, 4698)
+    or (Source == "Microsoft-Windows-Sysmon" and EventID in (1, 3, 11, 23))
+    or (Source == "Microsoft-Windows-TaskScheduler" and EventID in (106, 200, 201))
+| extend Detail = coalesce(Activity, RenderedDescription, strcat("EventID ", tostring(EventID)))
+| project
+    TimeGenerated,
+    EventID,
+    Source = iff(isempty(Source), "Security", Source),
+    TargetUserName,
+    IpAddress,
+    Detail
+| order by TimeGenerated asc
