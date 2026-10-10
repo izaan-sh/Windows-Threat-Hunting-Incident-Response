@@ -73,7 +73,7 @@ Most portfolio labs stop once an alert fires. This lab focuses entirely on **wha
 | Target host | `WKS-FIN-01`, Windows 11 Pro 25H2, static IP `10.10.1.10` |
 | Attacker host | `KALI-ATT-01`, Kali Linux, static IP `10.10.1.20` |
 | SIEM | Microsoft Sentinel, workspace `LAW-ir-lab` |
-| Telemetry | Windows Security auditing, PowerShell Script Block Logging (4103/4104), Sysmon v15.22 (SwiftOnSecurity baseline + a custom rule added mid-investigation, see [Key findings](#key-findings)) |
+| Telemetry | Windows Security auditing, PowerShell Script Block Logging (4103/4104), Sysmon v15.22 (SwiftOnSecurity baseline + a custom rule added mid-investigation, see [Key findings](#Key-findings)) |
 | Time standard | Every system and every timestamp in this project is UTC |
 
 Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data collection, Kali attacker configuration).
