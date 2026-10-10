@@ -1,0 +1,10 @@
+// Hunt 2 — Which accounts successfully authenticated after repeated failures?
+// Validate field population and event ordering against the actual SecurityEvent records.
+let fails = SecurityEvent
+| where EventID == 4625
+| summarize FailCount = count(), LastFailTime = max(TimeGenerated) by TargetUserName, IpAddress;
+SecurityEvent
+| where EventID == 4624
+| join kind=inner fails on TargetUserName, IpAddress
+| where TimeGenerated > LastFailTime and TimeGenerated < LastFailTime + 5m
+| project TimeGenerated, TargetUserName, IpAddress, LogonType, FailCount, LastFailTime

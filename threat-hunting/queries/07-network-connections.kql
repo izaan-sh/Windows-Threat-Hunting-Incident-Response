@@ -1,0 +1,11 @@
+// Hunt 7 — Which processes initiated network connections?
+// Sysmon Event 3 is expected in the Event table for this lab's collection design.
+Event
+| where TimeGenerated between (datetime(2026-10-07T10:00:00Z) .. datetime(2026-10-07T11:00:00Z))
+| where Source == "Microsoft-Windows-Sysmon" and EventID == 3
+| extend x = parse_xml(EventData).DataItem.EventData.Data
+| mv-apply d = x on (summarize kv = make_bag(pack(tostring(d["@Name"]), tostring(d["#text"]))))
+| project TimeGenerated, User = tostring(kv.User), Image = tostring(kv.Image),
+          DestinationIp = tostring(kv.DestinationIp), DestinationPort = tostring(kv.DestinationPort)
+| where DestinationIp !in ("", "-")
+| order by TimeGenerated asc

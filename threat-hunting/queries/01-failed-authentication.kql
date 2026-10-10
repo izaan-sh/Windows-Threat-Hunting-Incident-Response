@@ -1,0 +1,8 @@
+// Hunt 1 — Which users experienced multiple failed authentication attempts?
+// Lab investigation date: 7 October 2026 (UTC)
+SecurityEvent
+| where EventID == 4625
+| where TimeGenerated between (datetime(2026-10-07T00:00:00Z) .. datetime(2026-10-07T23:59:00Z))
+| summarize FailCount = count(), FirstFail = min(TimeGenerated), LastFail = max(TimeGenerated) by TargetUserName, IpAddress
+| where FailCount >= 3
+| order by FailCount desc

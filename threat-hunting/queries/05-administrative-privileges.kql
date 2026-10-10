@@ -1,0 +1,10 @@
+// Hunt 5 — Did accounts receive administrative privileges?
+// Event 4732 MemberName can be a SID; cross-check the raw event and lab evidence.
+let newAccounts = SecurityEvent
+| where EventID == 4720
+| project TargetUserName, CreatedTime = TimeGenerated;
+SecurityEvent
+| where EventID == 4732
+| extend MemberAccount = extract(@"%\{S-1-5-21-.*-(\d+)\}|CN=([^,]+)", 2, MemberName)
+| project TimeGenerated, GroupName=Activity, SubjectUserName
+| order by TimeGenerated asc

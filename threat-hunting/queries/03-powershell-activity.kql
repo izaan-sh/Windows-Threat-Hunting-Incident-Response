@@ -1,0 +1,10 @@
+// Hunt 3 — What PowerShell processes executed during the incident window?
+// Uses EventData XML parsing; inspect raw events if parsing returns empty fields.
+Event
+| where TimeGenerated between (datetime(2026-10-07T10:07:00Z) .. datetime(2026-10-07T10:52:00Z))
+| where Source == "Microsoft-Windows-PowerShell" and EventID == 4104
+| extend x = parse_xml(EventData).DataItem.EventData.Data
+| mv-apply d = x on (summarize kv = make_bag(pack(tostring(d["@Name"]), tostring(d["#text"]))))
+| project TimeGenerated, ScriptBlockText = tostring(kv.ScriptBlockText)
+| where ScriptBlockText !in ("prompt", "$global:?") and ScriptBlockText !startswith "{ Set-StrictMode"
+| order by TimeGenerated asc
