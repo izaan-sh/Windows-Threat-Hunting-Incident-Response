@@ -101,7 +101,7 @@ Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data col
 
 ## 🔬 Key findings
 
-The most interesting part of this project isn't the attack itself; it's what the investigation turned up. Full write-up: [`investigation/findings.md`](investigation/findings/).
+The most interesting part of this project isn't the attack itself; it's what the investigation turned up. Full write-up: [`investigation/`](investigation/).
 
 1. **Attribution requires process-ancestry correlation, not just the Security log.** Account-creation and privilege-escalation events were logged under one administrator's name; tracing Sysmon's process tree revealed they actually originated from the already-compromised standard-user session, pivoted through `runas`.
 2. **Two logs disagreed on who created the persistence task** — the Security log and the Task Scheduler Operational log attributed it to different identities. Cross-referencing both was necessary to attribute it correctly.
