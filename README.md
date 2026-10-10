@@ -95,7 +95,7 @@ Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data col
 
 - **One Microsoft Sentinel Analytics Rule** correlating failed-then-successful logons, High severity, full entity mapping, verified firing correctly against the attack data. See [`detections/sentinel-rules/`](detections/sentinel-rules/).
 - **Eight KQL threat-hunting queries**, each answering a specific investigative question, plus a master correlation query reconstructing the full chronological chain from multiple log sources. See [`threat-hunting/`](threat-hunting/).
-- **A fully verified incident timeline**, cross-checked stage by stage against raw Sentinel data as it was generated. See [`investigation/timeline.md`](investigation/timeline.md).
+- **A fully verified incident timeline**, cross-checked stage by stage against raw Sentinel data as it was generated. See [`investigation/timeline.md`](investigation/timeline/incident-timeline.md).
 - **A complete MITRE ATT&CK mapping**: 12 techniques, each tied to specific evidence and event IDs, plus one false-positive technique investigated and ruled out. See [`investigation/mitre-mapping.md`](investigation/mitre-mapping.md).
 - **Full containment and recovery**, with a before/after comparison against a pre-incident baseline, completed in under two minutes of response time. See [`incident-response/`](incident-response/).
 
