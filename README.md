@@ -96,12 +96,12 @@ Full setup walkthrough: [`setup/`](setup/) (Windows telemetry, Sentinel data col
 - **One Microsoft Sentinel Analytics Rule** correlating failed-then-successful logons, High severity, full entity mapping, verified firing correctly against the attack data. See [`detections/sentinel-rules/`](detections/sentinel-rules/).
 - **Eight KQL threat-hunting queries**, each answering a specific investigative question, plus a master correlation query reconstructing the full chronological chain from multiple log sources. See [`threat-hunting/`](threat-hunting/).
 - **A fully verified incident timeline**, cross-checked stage by stage against raw Sentinel data as it was generated. See [`investigation/timeline.md`](investigation/timeline/incident-timeline.md).
-- **A complete MITRE ATT&CK mapping**: 12 techniques, each tied to specific evidence and event IDs, plus one false-positive technique investigated and ruled out. See [`investigation/mitre-mapping.md`](investigation/mitre-mapping.md).
+- **A complete MITRE ATT&CK mapping**: 12 techniques, each tied to specific evidence and event IDs, plus one false-positive technique investigated and ruled out. See [`investigation/mitre-mapping.md`](investigation/findings/mitre-mapping.md).
 - **Full containment and recovery**, with a before/after comparison against a pre-incident baseline, completed in under two minutes of response time. See [`incident-response/`](incident-response/).
 
 ## 🔬 Key findings
 
-The most interesting part of this project isn't the attack itself; it's what the investigation turned up. Full write-up: [`investigation/findings.md`](investigation/findings.md).
+The most interesting part of this project isn't the attack itself; it's what the investigation turned up. Full write-up: [`investigation/findings.md`](investigation/findings/findings.md).
 
 1. **Attribution requires process-ancestry correlation, not just the Security log.** Account-creation and privilege-escalation events were logged under one administrator's name; tracing Sysmon's process tree revealed they actually originated from the already-compromised standard-user session, pivoted through `runas`.
 2. **Two logs disagreed on who created the persistence task** — the Security log and the Task Scheduler Operational log attributed it to different identities. Cross-referencing both was necessary to attribute it correctly.
@@ -110,7 +110,7 @@ The most interesting part of this project isn't the attack itself; it's what the
 
 ## 📄 Incident Report and Indicators of Compromise
 
-Full list, accounts, network, host artifacts, timing: [`investigation/iocs.md`](investigation/iocs.md).
+Full list, accounts, network, host artifacts, timing: [`investigation/iocs.md`](investigation/findings/iocs.md).
 
 The full written incident report, covering Executive Summary, Environment, Incident Overview, Attack Timeline, Detection, Investigation, MITRE ATT&CK Mapping, Indicators of Compromise, Containment, Recovery, Lessons Learned, and Detection Recommendations, is in [`report/Windows-Threat-Hunting-IR-Report.pdf`](report/).
 
